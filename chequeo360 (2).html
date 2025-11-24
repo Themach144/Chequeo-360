@@ -1,0 +1,328 @@
+
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Chequeo360 — Calendario de chequeos preventivos</title>
+  <style>
+    :root{--bg:#0f1724;--card:#0b1220;--accent:#ef476f;--muted:#94a3b8;--glass:rgba(255,255,255,0.03)}
+    *{box-sizing:border-box;font-family:Inter,ui-sans-serif,system-ui,Arial,Helvetica,sans-serif}
+    body{margin:0;background:linear-gradient(180deg,#071028 0%, #071428 60%);color:#e6eef8}
+    .wrap{max-width:1100px;margin:28px auto;padding:20px}
+    header{display:flex;gap:16px;align-items:center}
+    .logo{display:flex;align-items:center;gap:12px}
+    .logo .heart{width:48px;height:48px;border-radius:12px;background:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:700;color:white}
+    h1{margin:0;font-size:1.4rem}
+    p.lead{margin:6px 0 18px;color:var(--muted)}
+
+    .grid{display:grid;grid-template-columns:360px 1fr;gap:18px}
+    .card{background:var(--card);padding:16px;border-radius:12px;box-shadow:0 6px 18px rgba(2,6,23,0.6)}
+    label{display:block;font-size:0.85rem;margin:8px 0 6px;color:var(--muted)}
+    input[type=text],input[type=number],select{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:var(--glass);color:inherit}
+    .small{font-size:0.85rem;color:var(--muted)}
+    .btn{display:inline-block;padding:10px 14px;border-radius:10px;background:linear-gradient(90deg,var(--accent),#ff8fa3);border:none;color:white;cursor:pointer}
+    .checkbox-row{display:flex;flex-wrap:wrap;gap:8px}
+    .chip{background:rgba(255,255,255,0.03);padding:8px 10px;border-radius:999px}
+
+    .results{display:flex;flex-direction:column;gap:12px}
+    .item{display:flex;justify-content:space-between;align-items:center;padding:12px;border-radius:10px;background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent)}
+    .muted{color:var(--muted)}
+    .recommend{font-size:0.95rem}
+
+    .extras{display:flex;gap:12px;flex-wrap:wrap}
+    .extra-card{flex:1;min-width:220px}
+
+    footer{margin-top:20px;color:var(--muted);font-size:0.82rem}
+
+    @media (max-width:900px){.grid{grid-template-columns:1fr} .logo h1{font-size:1.1rem}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="logo">
+        <div class="heart">❤</div>
+        <div>
+          <h1>Chequeo360</h1>
+          <p class="lead">Calendario personalizado de chequeos preventivos — orientativo. Rellena tus datos y genera tu plan.</p>
+        </div>
+      </div>
+    </header>
+
+    <main class="grid">
+      <section class="card">
+        <h3>Datos personales</h3>
+         <label>Nombre y Apellidos</label>
+        <input id="Nombre" type="text"/>
+
+        <label>Edad</label>
+        <input id="age" type="number" min="0" max="120" value="35" />
+
+        <label>Sexo</label>
+        <select id="sex">
+          <option value="female">Femenino</option>
+          <option value="male">Masculino</option>
+          <option value="other">Otro / Prefiero no decir</option>
+        </select>
+
+        <label>RUT (Sin puntos y con guión)</label>
+        <!-- Aquí está la papa: cambiamos type="number" a type="text" -->
+        <input id="RUN" type="text" placeholder="12345678-K" />
+
+        <label>Factores de riesgo (marca los que apliquen)</label>
+        <div class="checkbox-row" id="risk-factors">
+          <label class="chip"><input type="checkbox" value="smoke" /> Fuma</label>
+          <label class="chip"><input type="checkbox" value="diabetes" /> Diabetes</label>
+          <label class="chip"><input type="checkbox" value="hypertension" /> Hipertensión</label>
+          <label class="chip"><input type="checkbox" value="family" /> Antecedentes familiares</label>
+          <label class="chip"><input type="checkbox" value="allergies" /> Alergias</label>
+          <label class="chip"><input type="checkbox" value="obesity" /> Obesidad</label>
+          <label class="chip"><input type="checkbox" value="cancer" /> Cáncer</label>
+          <label class="chip"><input type="checkbox" value="others" /> Otros</label>
+        </div>
+
+         <label>Especificar patología (Otros) </label>
+        <input id="other_pathology" type="text"/>
+
+        <label>Email (para recordatorios)</label>
+        <input id="email" type="text" placeholder="tu@correo.com" />
+
+        <label>Número de teléfono</label>
+        <input id="phone" type="number"/>
+
+        <div style="margin-top:12px;display:flex;gap:8px;justify-content:flex-start">
+          <button class="btn" id="generate">Generar calendario</button>
+          <button class="btn" id="save" style="background:transparent;border:1px solid rgba(255,255,255,0.06)">Guardar local</button>
+        </div>
+
+        <p class="small" style="margin-top:10px">Nota: las recomendaciones son orientativas. Consulta con un profesional de la salud para decisiones médicas.</p>
+      </section>
+
+      <section>
+        <div class="card">
+          <h3>Tu plan de chequeos</h3>
+          <div id="plan" class="results">
+            <p class="muted">Aún no has generado un plan. Pulsa "Generar calendario".</p>
+          </div>
+          <div style="margin-top:12px">
+            <button class="btn" id="download-ics">Descargar recordatorios (.ics)</button>
+            <button class="btn" id="email-reminder" style="background:linear-gradient(90deg,#2db3ff,#00c2a8)">Simular recordatorio por email</button>
+          </div>
+        </div>
+
+        <div class="extras" style="margin-top:12px">
+          <div class="card extra-card">
+            <h4>Recomendaciones rápidas</h4>
+            <div id="advice">
+              <p class="recommend">Alimentación: Prioriza frutas, verduras, granos enteros y proteínas magras. Evita procesados y azúcares añadidos.</p>
+              <p class="recommend">Ejercicio: 150 min/sem de actividad moderada (o 75 min intensa). Incluye fuerza 2 veces/sem.</p>
+            </div>
+          </div>
+
+          <div class="card extra-card">
+            <h4>Centros de salud</h4>
+            <p class="small">Enlaces de ejemplo (modifica según tu país):</p>
+            <ul>
+              <li><a href="https://www.google.com/maps/search/centro+salud+publico" target="_blank">Buscar centros de salud pública</a></li>
+              <li><a href="https://www.google.com/maps/search/clinica+privada" target="_blank">Buscar clínicas privadas</a></li>
+            </ul>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <small>Chequeo360 — herramienta orientativa. No reemplaza la evaluación médica profesional.</small>
+    </footer>
+  </div>
+
+  <script>
+    // Regla simple de recomendaciones.
+    const defaults = [
+      {id:'bp', title:'Control de presión arterial', freqYears:1, notes:'Medir tensión arterial cada año. Más frecuente si hay hipertensión.'},
+      {id:'lipids', title:'Perfil lipídico (colesterol)', freqYears:4, notes:'Cada 4 años en adultos sanos; más frecuente con factores de riesgo.'},
+      {id:'blood', title:'Análisis de sangre general', freqYears:1, notes:'Hemograma, glucosa, función renal y hepática según indicación.'},
+      {id:'diab', title:'Control de glucosa/HbA1c', freqYears:1, notes:'Si diabetes o riesgo elevado, controlar según protocolo.'},
+      {id:'pap', title:'Papanicolaou (citología) / HPV', freqYears:3, sex:'female', minAge:21, maxAge:65, notes:'Cada 3 años (o según guía local).'},
+      {id:'mamo', title:'Mamografía', freqYears:2, sex:'female', minAge:40, notes:'Cada 1-2 años según riesgo y guía local.'},
+      {id:'prost', title:'PSA / examen prostático', freqYears:2, sex:'male', minAge:50, notes:'Conversar con tu médico sobre el tamizaje.'},
+      {id:'colon', title:'Tamizaje de cáncer colorectal', freqYears:10, minAge:50, notes:'Colonoscopía cada 10 años (o test fecal anual según protocolo).'},
+      {id:'bone', title:'Densitometría ósea', freqYears:8, sex:'female', minAge:65, notes:'Según riesgo (edad, menopausia, fragilidad). '}
+    ];
+
+    function getCheckedRisk(){
+      const nodes = document.querySelectorAll('#risk-factors input[type=checkbox]');
+      return Array.from(nodes).filter(n=>n.checked).map(n=>n.value);
+    }
+
+    function generatePlan(){
+      const age = parseInt(document.getElementById('age').value||0,10);
+      const sex = document.getElementById('sex').value;
+      const risks = getCheckedRisk();
+      const email = document.getElementById('email').value.trim();
+
+      // Filter rules by age/sex
+      const applies = defaults.filter(d=>{
+        if(d.sex && d.sex!==sex) return false;
+        if(d.minAge && age < d.minAge) return false;
+        if(d.maxAge && age > d.maxAge) return false;
+        return true;
+      });
+
+      // If risk factor exists, increase frequency for some tests
+      const plan = applies.map(d=>{
+        let freq = d.freqYears || 1;
+        if(risks.includes('hypertension') && d.id==='bp') freq = 0.5; // cada 6 meses
+        if(risks.includes('diabetes') && d.id==='diab') freq = 0.5;
+        if(risks.includes('family') && d.id==='colon') freq = Math.max(5, freq);
+        return {...d, freqYears:freq};
+      }).sort((a,b)=>a.freqYears-b.freqYears);
+
+      renderPlan(plan,age,sex,email);
+    }
+
+    function addMonths(date, months){
+      const d = new Date(date);
+      d.setMonth(d.getMonth()+months);
+      return d;
+    }
+
+    function nextDates(freqYears, count=3){
+      const out = [];
+      const now = new Date();
+      const stepMonths = Math.max(1, Math.round(freqYears*12));
+      for(let i=0;i<count;i++){
+        out.push(addMonths(now, stepMonths*i));
+      }
+      return out;
+    }
+
+    function formatDate(d){
+      return d.toLocaleDateString();
+    }
+
+    function renderPlan(plan,age,sex,email){
+      const container = document.getElementById('plan');
+      container.innerHTML = '';
+      if(!plan.length){
+        container.innerHTML = '<p class="muted">No hay recomendaciones automáticas para estos datos. Consulte un profesional.</p>';
+        return;
+      }
+
+      plan.forEach(item=>{
+        const el = document.createElement('div'); el.className='item';
+        const left = document.createElement('div');
+        left.innerHTML = `<div style="font-weight:600">${item.title}</div><div class="muted" style="font-size:0.85rem">${item.notes}</div>`;
+        const dates = nextDates(item.freqYears,3).map(formatDate).join('<br/>');
+        const right = document.createElement('div');
+        right.style.textAlign='right';
+        right.innerHTML = `<div class="muted">Frecuencia: cada ${item.freqYears} año(s)</div><div style="margin-top:6px">${dates}</div><div style="margin-top:6px"><button class="btn" onclick="downloadSingle('${item.id}')">Descargar .ics</button></div>`;
+        el.appendChild(left); el.appendChild(right);
+        container.appendChild(el);
+      });
+
+      // store latest plan in localStorage to allow ICS download later
+      localStorage.setItem('chequeo360_latest', JSON.stringify({plan,age,sex,email,timestamp:Date.now()}));
+    }
+
+    function downloadICSForEvent(title, startDateStr, description){
+      const uid = 'chequeo360-' + Math.random().toString(36).slice(2);
+      const start = new Date(startDateStr);
+      const end = new Date(start.getTime() + 30*60000);
+      function toICSDate(d){
+        // Aquí usamos el regex limpio gracias al r-string de Python
+        return d.toISOString().replace(/[-:]|\.(.*)/g,'');
+      }
+      const ics = `BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//Chequeo360//ES\nBEGIN:VEVENT\nUID:${uid}\nDTSTAMP:${toICSDate(new Date())}Z\nDTSTART:${toICSDate(start)}Z\nDTEND:${toICSDate(end)}Z\nSUMMARY:${title}\nDESCRIPTION:${description}\nEND:VEVENT\nEND:VCALENDAR`;
+      const blob = new Blob([ics],{type:'text/calendar;charset=utf-8'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href=url; a.download = title.replace(/\s+/g,'_') + '.ics'; document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    function downloadSingle(id){
+      const saved = JSON.parse(localStorage.getItem('chequeo360_latest')||'null');
+      if(!saved){alert('Genera primero el plan.');return}
+      const entry = saved.plan.find(p=>p.id===id) || saved.plan[0];
+      const date = nextDates(entry.freqYears,1)[0];
+      downloadICSForEvent(entry.title, date.toISOString(), entry.notes);
+    }
+
+    document.getElementById('generate').addEventListener('click',()=>generatePlan());
+    document.getElementById('save').addEventListener('click',()=>{
+      const data = {age:document.getElementById('age').value,sex:document.getElementById('sex').value,risks:getCheckedRisk(),email:document.getElementById('email').value};
+      localStorage.setItem('chequeo360_profile', JSON.stringify(data));
+      alert('Perfil guardado en este navegador.');
+    });
+
+    document.getElementById('download-ics').addEventListener('click',()=>{
+      const saved = JSON.parse(localStorage.getItem('chequeo360_latest')||'null');
+      if(!saved){alert('Genera primero el plan.');return}
+      const events = saved.plan.map((p,i)=>({title:p.title,date: nextDates(p.freqYears,1)[0],notes:p.notes}));
+      let body = 'BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//Chequeo360//ES\n';
+      events.forEach(e=>{
+        const uid = 'evt-'+Math.random().toString(36).slice(2);
+        const start = new Date(e.date);
+        const end = new Date(start.getTime()+30*60000);
+        function toICSDate(d){return d.toISOString().replace(/[-:]|\.(.*)/g,'')+'Z';}
+        body += 'BEGIN:VEVENT\nUID:'+uid+'\nDTSTAMP:'+toICSDate(new Date())+'\nDTSTART:'+toICSDate(start)+'\nDTEND:'+toICSDate(end)+'\nSUMMARY:'+e.title+'\nDESCRIPTION:'+e.notes+'\nEND:VEVENT\n';
+      });
+      body += 'END:VCALENDAR';
+      const blob = new Blob([body],{type:'text/calendar;charset=utf-8'});
+      const url = URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='chequeo360_plan.ics'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+    });
+
+    document.getElementById('email-reminder').addEventListener('click',()=>{
+      const saved = JSON.parse(localStorage.getItem('chequeo360_latest')||'null');
+      if(!saved){alert('Genera primero el plan.');return}
+      const email = saved.email || prompt('Introduce tu email para simular el recordatorio:');
+      if(!email){alert('Email no proporcionado.');return}
+      const first = saved.plan[0];
+      const next = nextDates(first.freqYears,1)[0];
+      const subject = encodeURIComponent('Recordatorio — ' + first.title);
+      const body = encodeURIComponent(`Hola!\n\nEste es un recordatorio simulado para: ${first.title}.\nFecha sugerida: ${next.toLocaleDateString()}\n\nNotas: ${first.notes}\n\n(Generado por Chequeo360 - demo)\n`);
+      window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
+    });
+
+    // Cargar perfil si existe
+    (function(){
+      const profile = JSON.parse(localStorage.getItem('chequeo360_profile')||'null');
+      if(profile){document.getElementById('age').value = profile.age || 35;document.getElementById('sex').value=profile.sex||'female';document.getElementById('email').value=profile.email||''; }
+    })();
+
+    window.downloadSingle = downloadSingle;
+  </script>
+
+    <!-- Calendario de Agendamiento -->
+    <section id="calendario" class="card" style="margin-top:18px">
+        <h3>📅 Calendario de Agendamiento</h3>
+        <label>Selecciona un día disponible:</label>
+        <input type="date" id="fecha">
+        <div style="margin-top:10px">
+           <button class="btn" onclick="agendarFecha()">Agendar</button>
+        </div>
+
+        <h4>Fechas agendadas:</h4>
+        <ul id="listaFechas" style="padding-left:20px;color:var(--muted)"></ul>
+    </section>
+
+    <script>
+    function agendarFecha() {
+        const fecha = document.getElementById("fecha").value;
+        if (!fecha) {
+            alert("Selecciona una fecha antes de agendar");
+            return;
+        }
+
+        const lista = document.getElementById("listaFechas");
+        const item = document.createElement("li");
+        item.textContent = fecha;
+        lista.appendChild(item);
+
+        document.getElementById("fecha").value = "";
+    }
+    </script>
+
+</body>
+</html>
